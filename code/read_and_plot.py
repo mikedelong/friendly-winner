@@ -82,6 +82,19 @@ if __name__ == '__main__':
     rms_average = sqrt(mean_squared_error(test_df.Count, y_hat_avg.avg_forecast))
     logger.debug('average model root-mean-squared error: %.3f' % rms_average)
 
+    y_hat_avg = test_df.copy()
+    y_hat_avg['moving_avg_forecast'] = train_df['Count'].rolling(60).mean().iloc[-1]
+    plt.figure()
+    plt.plot(train_df['Count'], label='Train')
+    plt.plot(test_df['Count'], label='Test')
+    plt.plot(y_hat_avg['moving_avg_forecast'], label='Moving Average Forecast')
+    plt.legend(loc='best')
+    plt.savefig(output_folder + 'moving_average.png')
+    plt.close()
+
+    rms_moving_average = sqrt(mean_squared_error(test_df.Count, y_hat_avg.moving_avg_forecast))
+    logger.debug('moving average model root-mean-squared error: %.3f' % rms_moving_average)
+
 
     logger.debug('done')
     finish_time = time.time()
