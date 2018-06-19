@@ -42,8 +42,9 @@ if __name__ == '__main__':
     df = df.resample('D').mean()
     logger.debug('the daily-sampled training dataset has shape %d x %d ' % df.shape)
 
-    split_point = 3 * df.shape[0] // 4
-    logger.debug('split point is %d' % split_point)
+    train_fraction = 0.75
+    split_point = int(train_fraction * df.shape[0])
+    logger.debug('we are training on %.3f of the data, or %d rows.' % (train_fraction, split_point))
 
     train_df = df[:split_point]
     test_df = df[split_point:]
@@ -65,8 +66,8 @@ if __name__ == '__main__':
     plt.savefig(output_folder + 'naive_model.png')
     plt.close()
 
-    rms = sqrt(mean_squared_error(test_df.Count, y_hat.naive))
-    logger.debug('naive model root-mean-squared error: %.3f' % rms)
+    rms_naive = sqrt(mean_squared_error(test_df.Count, y_hat.naive))
+    logger.debug('naive model root-mean-squared error: %.3f' % rms_naive)
 
     y_hat_avg = test_df.copy()
     y_hat_avg['avg_forecast'] = train_df['Count'].mean()
@@ -77,6 +78,10 @@ if __name__ == '__main__':
     plt.legend(loc='best')
     plt.savefig(output_folder + 'average_model.png')
     plt.close()
+
+    rms_average = sqrt(mean_squared_error(test_df.Count, y_hat_avg.avg_forecast))
+    logger.debug('average model root-mean-squared error: %.3f' % rms_average)
+
 
     logger.debug('done')
     finish_time = time.time()
