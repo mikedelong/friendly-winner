@@ -10,6 +10,7 @@ from sklearn.metrics import mean_squared_error
 from statsmodels.tsa.api import ExponentialSmoothing
 from statsmodels.tsa.api import Holt
 from statsmodels.tsa.api import SimpleExpSmoothing
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 if __name__ == '__main__':
     start_time = time.time()
@@ -143,6 +144,18 @@ if __name__ == '__main__':
 
     rms_holt_winter = sqrt(mean_squared_error(test_df.Count, y_hat_avg.Holt_Winter))
     logger.debug('holt-winter model root-mean-squared error: %.3f' % rms_holt_winter)
+
+    y_hat_avg = test_df.copy()
+    fit1 = SARIMAX(train_df.Count, order=(2, 1, 4), seasonal_order=(0, 1, 1, 7)).fit()
+
+    y_hat_avg['SARIMA'] = fit1.predict(start=test_df.index[0], end=test_df.index[-1], dynamic=True)
+    plt.figure()
+    plt.plot(train_df['Count'], label='Train')
+    plt.plot(test_df['Count'], label='Test')
+    plt.plot(y_hat_avg['SARIMA'], label='SARIMA')
+    plt.legend(loc='best')
+    plt.savefig(output_folder + 'sarimax.png')
+    plt.close()
 
     logger.debug('done')
     finish_time = time.time()
