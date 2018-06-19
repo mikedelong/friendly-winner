@@ -1,13 +1,13 @@
 import logging
+import os
 import time
+from math import sqrt
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import os
-
 from sklearn.metrics import mean_squared_error
-from math import sqrt
+from statsmodels.tsa.api import SimpleExpSmoothing
 
 if __name__ == '__main__':
     start_time = time.time()
@@ -95,6 +95,19 @@ if __name__ == '__main__':
     rms_moving_average = sqrt(mean_squared_error(test_df.Count, y_hat_avg.moving_avg_forecast))
     logger.debug('moving average model root-mean-squared error: %.3f' % rms_moving_average)
 
+    y_hat_avg = test_df.copy()
+    fit2 = SimpleExpSmoothing(np.asarray(train_df['Count'])).fit(smoothing_level=0.6, optimized=False)
+    y_hat_avg['SES'] = fit2.forecast(len(test_df))
+    plt.figure()
+    plt.plot(train_df['Count'], label='Train')
+    plt.plot(test_df['Count'], label='Test')
+    plt.plot(y_hat_avg['SES'], label='SES')
+    plt.legend(loc='best')
+    plt.savefig(output_folder + 'simple_exponential_smoothing.png')
+    plt.close()
+
+    rms_ses = sqrt(mean_squared_error(test_df.Count, y_hat_avg.SES))
+    logger.debug('simple exponential smoothing model root-mean-squared error: %.3f' % rms_moving_average)
 
     logger.debug('done')
     finish_time = time.time()
