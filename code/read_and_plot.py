@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
+from statsmodels.tsa.api import ExponentialSmoothing
 from statsmodels.tsa.api import Holt
 from statsmodels.tsa.api import SimpleExpSmoothing
 
@@ -124,6 +125,24 @@ if __name__ == '__main__':
 
     rms_holt = sqrt(mean_squared_error(test_df.Count, y_hat_avg.Holt_linear))
     logger.debug('holt model root-mean-squared error: %.3f' % rms_holt)
+
+    y_hat_avg = test_df.copy()
+    seasonal_periods = 7
+    trend = 'add'
+    seasonal = 'add'
+    fit1 = ExponentialSmoothing(np.asarray(train_df['Count']), seasonal_periods=seasonal_periods, trend=trend,
+                                seasonal=seasonal).fit()
+    y_hat_avg['Holt_Winter'] = fit1.forecast(len(test_df))
+    plt.figure()
+    plt.plot(train_df['Count'], label='Train')
+    plt.plot(test_df['Count'], label='Test')
+    plt.plot(y_hat_avg['Holt_Winter'], label='Holt_Winter')
+    plt.legend(loc='best')
+    plt.savefig(output_folder + 'holt_winter.png')
+    plt.close()
+
+    rms_holt_winter = sqrt(mean_squared_error(test_df.Count, y_hat_avg.Holt_Winter))
+    logger.debug('holt-winter model root-mean-squared error: %.3f' % rms_holt_winter)
 
     logger.debug('done')
     finish_time = time.time()
