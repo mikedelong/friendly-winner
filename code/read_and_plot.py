@@ -157,6 +157,9 @@ if __name__ == '__main__':
     plt.savefig(output_folder + 'sarimax.png')
     plt.close()
 
+    rms_sarimax = sqrt(mean_squared_error(test_df.Count, y_hat_avg.SARIMA))
+    logger.debug('SARIMAX root-mean-squared error: %.3f' % rms_sarimax)
+
     logger.debug('done')
     finish_time = time.time()
     elapsed_hours, elapsed_remainder = divmod(finish_time - start_time, 3600)
