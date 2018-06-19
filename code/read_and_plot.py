@@ -149,7 +149,7 @@ if __name__ == '__main__':
     fit1 = SARIMAX(train_df.Count, order=(2, 1, 4), seasonal_order=(0, 1, 1, 7)).fit()
 
     y_hat_avg['SARIMA'] = fit1.predict(start=test_df.index[0], end=test_df.index[-1], dynamic=True)
-    plt.figure()
+    plt.figure(figsize=(12, 8))
     plt.plot(train_df['Count'], label='Train')
     plt.plot(test_df['Count'], label='Test')
     plt.plot(y_hat_avg['SARIMA'], label='SARIMA')
