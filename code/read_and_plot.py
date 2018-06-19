@@ -2,7 +2,7 @@ import logging
 import time
 
 import matplotlib.pyplot as plt
-# import numpy as np
+import numpy as np
 import pandas as pd
 import os
 
@@ -31,24 +31,35 @@ if __name__ == '__main__':
         quit()
 
     train_file = input_folder + 'Train.csv'
-    train_df = pd.read_csv(train_file)
-    logger.debug(train_df.shape)
+    df = pd.read_csv(train_file)
+    logger.debug('the original training dataset has shape %d x %d' % df.shape)
 
-    test_file = input_folder + 'Test.csv'
-    test_df = pd.read_csv(test_file)
-    logger.debug(test_df.shape)
+    df['Timestamp'] = pd.to_datetime(df.Datetime, format='%d-%m-%Y %H:%M')
+    df.index = df.Timestamp
+    df = df.resample('D').mean()
+    logger.debug('the daily-sampled training dataset has shape %d x %d ' % df.shape)
 
-    # df.Timestamp = pd.to_datetime(df.Datetime, format='%d-%m-%Y %H:%M')
-    # df.index = df.Timestamp
-    # df = df.resample('D').mean()
-    train_df['Timestamp'] = pd.to_datetime(train_df.Datetime, format='%d-%m-%Y %H:%M')
-    train_df.index = train_df.Timestamp
-    train_df = train_df.resample('D').mean()
-    test_df['Timestamp'] = pd.to_datetime(test_df.Datetime, format='%d-%m-%Y %H:%M')
-    test_df.index = test_df.Timestamp
-    test_df = test_df.resample('D').mean()
+    split_point = 3 * df.shape[0] // 4
+    logger.debug('split point is %d' % split_point)
+
+    train_df = df[:split_point]
+    test_df = df[split_point:]
+
     train_df.Count.plot()
-    plt.show()
+    test_df.Count.plot()
+    plt.savefig(output_folder + 'train-test-plot.png')
+    plt.close()
+
+    naive_data = np.asarray(train_df.Count)
+    y_hat = test_df.copy()
+    y_hat['naive'] = naive_data[len(naive_data) - 1]
+    plt.figure()
+    plt.plot(train_df.index, train_df['Count'], label='Train')
+    plt.plot(test_df.index, test_df['Count'], label='Test')
+    plt.plot(y_hat.index, y_hat['naive'], label='Naive Forecast')
+    plt.legend(loc='best')
+    plt.title("Naive Forecast")
+    plt.savefig(output_folder + 'naive_model.png')
 
     logger.debug('done')
     finish_time = time.time()
