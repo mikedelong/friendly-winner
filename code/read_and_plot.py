@@ -75,7 +75,8 @@ if __name__ == '__main__':
     plt.plot(test_df['Count'], label='Test')
     plt.plot(y_hat_avg['avg_forecast'], label='Average Forecast')
     plt.legend(loc='best')
-    plt.show()
+    plt.savefig(output_folder + 'average_model.png')
+    plt.close()
 
     logger.debug('done')
     finish_time = time.time()
