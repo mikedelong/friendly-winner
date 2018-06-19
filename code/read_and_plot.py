@@ -6,6 +6,9 @@ import numpy as np
 import pandas as pd
 import os
 
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+
 if __name__ == '__main__':
     start_time = time.time()
 
@@ -60,6 +63,19 @@ if __name__ == '__main__':
     plt.legend(loc='best')
     plt.title("Naive Forecast")
     plt.savefig(output_folder + 'naive_model.png')
+    plt.close()
+
+    rms = sqrt(mean_squared_error(test_df.Count, y_hat.naive))
+    logger.debug('naive model root-mean-squared error: %.3f' % rms)
+
+    y_hat_avg = test_df.copy()
+    y_hat_avg['avg_forecast'] = train_df['Count'].mean()
+    plt.figure()
+    plt.plot(train_df['Count'], label='Train')
+    plt.plot(test_df['Count'], label='Test')
+    plt.plot(y_hat_avg['avg_forecast'], label='Average Forecast')
+    plt.legend(loc='best')
+    plt.show()
 
     logger.debug('done')
     finish_time = time.time()
