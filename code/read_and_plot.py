@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_squared_error
+from statsmodels.tsa.api import Holt
 from statsmodels.tsa.api import SimpleExpSmoothing
 
 if __name__ == '__main__':
@@ -108,6 +109,21 @@ if __name__ == '__main__':
 
     rms_ses = sqrt(mean_squared_error(test_df.Count, y_hat_avg.SES))
     logger.debug('simple exponential smoothing model root-mean-squared error: %.3f' % rms_moving_average)
+
+    # todo figure out what's wrong here
+    y_hat_avg = test_df.copy()
+    fit1 = Holt(np.asarray(train_df['Count'])).fit(smoothing_level=0.3, smoothing_slope=0.1)
+    y_hat_avg['Holt_linear'] = fit1.forecast(len(test_df))
+    plt.figure()
+    plt.plot(train_df['Count'], label='Train')
+    plt.plot(test_df['Count'], label='Test')
+    plt.plot(y_hat_avg['Holt_linear'], label='Holt_linear')
+    plt.legend(loc='best')
+    plt.savefig(output_folder + 'holt-model.png')
+    plt.close()
+
+    rms_holt = sqrt(mean_squared_error(test_df.Count, y_hat_avg.Holt_linear))
+    logger.debug('holt model root-mean-squared error: %.3f' % rms_holt)
 
     logger.debug('done')
     finish_time = time.time()
